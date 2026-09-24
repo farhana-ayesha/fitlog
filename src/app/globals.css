@@ -1,26 +1,52 @@
+@import url("https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap");
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@theme {
+  --color-accent: #ccff00;
+  --color-ink: #0b0b0c;
+  --color-surface: #161618;
+  --color-surface2: #1e1e21;
+  --color-line: #2b2b2f;
+  --color-muted: #9a9aa2;
+
+  --font-display: "Oswald", sans-serif;
+  --font-body: "Inter", sans-serif;
+
+  --radius-xl2: 1.25rem;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
+html,
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: #0b0b0c;
+  color: #f4f4f5;
+  font-family: "Inter", sans-serif;
+}
+
+.font-display {
+  font-family: "Oswald", sans-serif;
+}
+
+::-webkit-scrollbar {
+  height: 8px;
+  width: 8px;
+}
+::-webkit-scrollbar-thumb {
+  background: #2b2b2f;
+  border-radius: 999px;
+}
+
+.tag-pill {
+  @apply rounded-full border border-line bg-surface2 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-muted;
+}
+
+.stat-chip {
+  @apply flex items-center gap-1 text-xs text-muted;
+}
+
+.btn-primary {
+  @apply inline-flex items-center justify-center gap-2 rounded-full bg-accent px-6 py-3 text-sm font-bold uppercase tracking-wide text-ink transition hover:brightness-95 active:scale-[0.98];
+}
+
+.btn-secondary {
+  @apply inline-flex items-center justify-center gap-2 rounded-full border border-line bg-transparent px-6 py-3 text-sm font-bold uppercase tracking-wide text-white transition hover:border-accent hover:text-accent active:scale-[0.98];
 }
