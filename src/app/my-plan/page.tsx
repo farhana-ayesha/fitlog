@@ -3,7 +3,14 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { CheckCircle, Clock, Flame, Star, X } from "lucide-react";
+import {
+  CheckCircle,
+  ChevronDown,
+  Clock,
+  Flame,
+  Star,
+  X,
+} from "lucide-react";
 import { usePlan, Workout } from "@/context/PlanContext";
 import { useToast } from "@/context/ToastContext";
 
@@ -14,25 +21,39 @@ const TABS: { key: TabKey; label: string }[] = [
   { key: "saved", label: "Saved" },
 ];
 
+const SORT_OPTIONS: { value: keyof Workout; label: string }[] = [
+  { value: "duration", label: "Duration" },
+  { value: "caloriesBurned", label: "Calories" },
+  { value: "rating", label: "Rating" },
+];
+
 export default function MyPlanPage() {
   const { plan, saved, hydrated, removeFromPlan, removeFromSaved, markDone } =
     usePlan();
   const { showToast } = useToast();
   const [tab, setTab] = useState<TabKey>("plan");
+  const [sortBy, setSortBy] = useState<keyof Workout>("duration");
 
-  // যেই ট্যাব সিলেক্টেড, সেই লিস্টটাই দেখাবো
-  const list: Workout[] = tab === "plan" ? plan : saved;
+  const list: Workout[] = useMemo(() => {
+    const source = tab === "plan" ? plan : saved;
+    return [...source].sort(
+      (a, b) => (b[sortBy] as number) - (a[sortBy] as number)
+    );
+  }, [tab, plan, saved, sortBy]);
+
 
   const metrics = useMemo(() => {
-    return plan.reduce(
-      (acc, w) => ({
-        exercises: acc.exercises + 1,
-        minutes: acc.minutes + w.duration,
-        calories: acc.calories + w.caloriesBurned,
-      }),
-      { exercises: 0, minutes: 0, calories: 0 }
-    );
-  }, [plan]);
+  return list.reduce(
+    (acc, w) => ({
+      exercises: acc.exercises + 1,
+      minutes: acc.minutes + w.duration,
+      calories: acc.calories + w.caloriesBurned,
+    }),
+    { exercises: 0, minutes: 0, calories: 0 }
+  );
+}, [list]);
+
+
 
   function handleRemove(id: number) {
     if (tab === "plan") {
@@ -58,7 +79,6 @@ export default function MyPlanPage() {
         Cap of five lifts for today. Finish them, then load more.
       </p>
 
-      {/* মেট্রিক্স সামারি — শুধু Today's Plan থেকে হিসাব হয় */}
       <div className="mt-8 grid grid-cols-3 gap-3 sm:gap-4">
         {[
           ["Exercises", metrics.exercises],
@@ -79,21 +99,37 @@ export default function MyPlanPage() {
         ))}
       </div>
 
-      {/* Today's Plan / Saved ট্যাব */}
-      <div className="mt-8 flex gap-2 border-b border-line">
-        {TABS.map((t) => (
-          <button
-            key={t.key}
-            onClick={() => setTab(t.key)}
-            className={`px-4 py-3 text-sm font-bold uppercase tracking-wide transition ${
-              tab === t.key
-                ? "border-b-2 border-accent text-accent"
-                : "text-muted hover:text-white"
-            }`}
+      <div className="mt-8 flex flex-col gap-4 border-b border-line pb-0 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex gap-2">
+          {TABS.map((t) => (
+            <button
+              key={t.key}
+              onClick={() => setTab(t.key)}
+              className={`px-4 py-3 text-sm font-bold uppercase tracking-wide transition ${
+                tab === t.key
+                  ? "border-b-2 border-accent text-accent"
+                  : "text-muted hover:text-white"
+              }`}
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
+
+        <div className="relative mb-3 sm:mb-0">
+          <select
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value as keyof Workout)}
+            className="appearance-none rounded-full border border-line bg-surface py-2 pl-4 pr-9 text-sm font-semibold text-white outline-none"
           >
-            {t.label}
-          </button>
-        ))}
+            {SORT_OPTIONS.map((opt) => (
+              <option key={opt.value} value={opt.value}>
+                Sort By: {opt.label}
+              </option>
+            ))}
+          </select>
+          <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted" />
+        </div>
       </div>
 
       <div className="mt-6">
@@ -158,7 +194,7 @@ export default function MyPlanPage() {
                     View Details
                   </Link>
 
-                  {/* Mark as Done শুধু Today's Plan ট্যাবে দরকার, Saved-এ না */}
+                  {/* Mark as Done শুধু Today's Plan ট্যাবে থাকবে, Saved-এ না */}
                   {tab === "plan" && (
                     <button
                       onClick={() => handleDone(w.id)}

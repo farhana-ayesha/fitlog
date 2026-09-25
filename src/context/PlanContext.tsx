@@ -32,6 +32,7 @@ type PlanContextType = {
   removeFromPlan: (id: number) => void;
   removeFromSaved: (id: number) => void;
   markDone: (id: number) => void;
+  markSavedDone: (id: number) => void;
 };
 
 const PlanContext = createContext<PlanContextType | null>(null);
@@ -55,11 +56,11 @@ export function PlanProvider({ children }: { children: ReactNode }) {
   const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
-  // eslint-disable-next-line react-hooks/set-state-in-effect
-  setPlan(safeRead(PLAN_KEY));
-  setSaved(safeRead(SAVED_KEY));
-  setHydrated(true);
-}, []);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setPlan(safeRead(PLAN_KEY));
+    setSaved(safeRead(SAVED_KEY));
+    setHydrated(true);
+  }, []);
 
   useEffect(() => {
     if (!hydrated) return;
@@ -101,6 +102,12 @@ export function PlanProvider({ children }: { children: ReactNode }) {
     );
   }
 
+  function markSavedDone(id: number) {
+    setSaved((prev) =>
+      prev.map((w) => (w.id === id ? { ...w, done: !w.done } : w))
+    );
+  }
+
   return (
     <PlanContext.Provider
       value={{
@@ -116,6 +123,7 @@ export function PlanProvider({ children }: { children: ReactNode }) {
         removeFromPlan,
         removeFromSaved,
         markDone,
+        markSavedDone,
       }}
     >
       {children}
