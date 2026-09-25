@@ -8,6 +8,7 @@ import {
   ChevronDown,
   Clock,
   Flame,
+  Search,
   Star,
   X,
 } from "lucide-react";
@@ -33,27 +34,33 @@ export default function MyPlanPage() {
   const { showToast } = useToast();
   const [tab, setTab] = useState<TabKey>("plan");
   const [sortBy, setSortBy] = useState<keyof Workout>("duration");
+  const [query, setQuery] = useState("");
 
   const list: Workout[] = useMemo(() => {
     const source = tab === "plan" ? plan : saved;
-    return [...source].sort(
+    const q = query.trim().toLowerCase();
+    const filtered = q
+      ? source.filter(
+          (w) =>
+            w.name.toLowerCase().includes(q) ||
+            w.muscleGroups.some((tag) => tag.toLowerCase().includes(q))
+        )
+      : source;
+    return [...filtered].sort(
       (a, b) => (b[sortBy] as number) - (a[sortBy] as number)
     );
-  }, [tab, plan, saved, sortBy]);
-
+  }, [tab, plan, saved, sortBy, query]);
 
   const metrics = useMemo(() => {
-  return list.reduce(
-    (acc, w) => ({
-      exercises: acc.exercises + 1,
-      minutes: acc.minutes + w.duration,
-      calories: acc.calories + w.caloriesBurned,
-    }),
-    { exercises: 0, minutes: 0, calories: 0 }
-  );
-}, [list]);
-
-
+    return list.reduce(
+      (acc, w) => ({
+        exercises: acc.exercises + 1,
+        minutes: acc.minutes + w.duration,
+        calories: acc.calories + w.caloriesBurned,
+      }),
+      { exercises: 0, minutes: 0, calories: 0 }
+    );
+  }, [list]);
 
   function handleRemove(id: number) {
     if (tab === "plan") {
@@ -116,19 +123,31 @@ export default function MyPlanPage() {
           ))}
         </div>
 
-        <div className="relative mb-3 sm:mb-0">
-          <select
-            value={sortBy}
-            onChange={(e) => setSortBy(e.target.value as keyof Workout)}
-            className="appearance-none rounded-full border border-line bg-surface py-2 pl-4 pr-9 text-sm font-semibold text-white outline-none"
-          >
-            {SORT_OPTIONS.map((opt) => (
-              <option key={opt.value} value={opt.value}>
-                Sort By: {opt.label}
-              </option>
-            ))}
-          </select>
-          <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted" />
+        <div className="mb-3 flex flex-col gap-3 sm:mb-0 sm:flex-row sm:items-center">
+          <div className="flex items-center gap-2 rounded-full border border-line bg-surface px-4 py-2">
+            <Search className="h-4 w-4 text-muted" />
+            <input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search name or tag"
+              className="w-40 bg-transparent text-sm outline-none placeholder:text-muted"
+            />
+          </div>
+
+          <div className="relative">
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value as keyof Workout)}
+              className="appearance-none rounded-full border border-line bg-surface py-2 pl-4 pr-9 text-sm font-semibold text-white outline-none"
+            >
+              {SORT_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  Sort By: {opt.label}
+                </option>
+              ))}
+            </select>
+            <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted" />
+          </div>
         </div>
       </div>
 
@@ -145,7 +164,9 @@ export default function MyPlanPage() {
               Nothing here yet
             </p>
             <p className="max-w-xs text-sm text-muted">
-              Browse the library and add a lift to get today moving.
+              {query
+                ? "No matches for that search."
+                : "Browse the library and add a lift to get today moving."}
             </p>
             <Link href="/" className="btn-primary mt-2">
               Go to workouts
@@ -194,7 +215,6 @@ export default function MyPlanPage() {
                     View Details
                   </Link>
 
-                  {/* Mark as Done শুধু Today's Plan ট্যাবে থাকবে, Saved-এ না */}
                   {tab === "plan" && (
                     <button
                       onClick={() => handleDone(w.id)}
