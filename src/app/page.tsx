@@ -140,13 +140,19 @@ export default function HomePage() {
           </p>
         )}
 
-        {!loading && !error && (
-          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {visibleWorkouts.map((workout) => (
-              <WorkoutCard key={workout.id} workout={workout} />
-            ))}
-          </div>
-        )}
+        {!loading && !error && visibleWorkouts.length === 0 && (
+  <p className="rounded-xl2 border border-line bg-surface p-6 text-center text-sm text-muted">
+    No workouts match your search.
+  </p>
+)}
+
+{!loading && !error && visibleWorkouts.length > 0 && (
+  <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+    {visibleWorkouts.map((workout) => (
+      <WorkoutCard key={workout.id} workout={workout} />
+    ))}
+  </div>
+)}
       </section>
     </div>
   );
